@@ -47,7 +47,7 @@ jobs:
             rm -rf /tmp/cmdline-tools.zip /tmp/cmdline-extract
             SDKMGR="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           fi
-          chmod +x "$SDKMGR"
+          [ -x "$SDKMGR" ] || sudo chmod +x "$SDKMGR"
           echo "$(dirname "$SDKMGR")" >> "$GITHUB_PATH"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           echo "Using sdkmanager: $SDKMGR"
