@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="XabarchiAppName">Xabarchi</string>
+    <string name="XabarchiTabChats">Chats</string>
+    <string name="XabarchiTabContacts">Contacts</string>
+    <string name="XabarchiTabCalls">Calls</string>
+    <string name="XabarchiTabSettings">Settings</string>
+    <string name="XabarchiGlassSettings">Liquid Glass Appearance</string>
+    <string name="XabarchiSimpleMode">Simple mode</string>
+    <string name="XabarchiSimpleModeDesc">Turns off heavy real-time blur and refraction shaders for maximum battery life.</string>
+    <string name="XabarchiTiltGlare">Tilt glare reflection</string>
+    <string name="XabarchiTiltGlareDesc">Moves a subtle specular highlight across glass surfaces when tilting your phone.</string>
+    <string name="XabarchiAboutTitle">About Xabarchi</string>
+    <string name="XabarchiAboutBody">Xabarchi is an independent open-source messenger forked from Telegram for Android and distributed under the GNU GPL v2 license. All messaging runs directly over the official Telegram protocol.</string>
+    <string name="XabarchiSourceCode">Original Source Code (Telegram for Android)</string>
+    <string name="XabarchiLicense">GNU GPL v2 License</string>
+</resources>

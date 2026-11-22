@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="XabarchiAppName">Xabarchi</string>
+    <string name="XabarchiTabChats">Чаты</string>
+    <string name="XabarchiTabContacts">Контакты</string>
+    <string name="XabarchiTabCalls">Звонки</string>
+    <string name="XabarchiTabSettings">Настройки</string>
+    <string name="XabarchiGlassSettings">Оформление Liquid Glass</string>
+    <string name="XabarchiSimpleMode">Простой режим</string>
+    <string name="XabarchiSimpleModeDesc">Отключает тяжелое размытие и шейдер преломления для экономии заряда.</string>
+    <string name="XabarchiTiltGlare">Блик при наклоне</string>
+    <string name="XabarchiTiltGlareDesc">Плавно перемещает световой блик по стеклу при наклоне устройства.</string>
+    <string name="XabarchiAboutTitle">О приложении Xabarchi</string>
+    <string name="XabarchiAboutBody">Xabarchi — независимый мессенджер с открытым исходным кодом на базе Telegram for Android, распространяемый по лицензии GNU GPL v2. Все сообщения работают напрямую по официальному протоколу Telegram.</string>
+    <string name="XabarchiSourceCode">Исходный код Telegram for Android</string>
+    <string name="XabarchiLicense">Лицензия GNU GPL v2</string>
+</resources>
