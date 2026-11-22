@@ -38,7 +38,6 @@ jobs:
 
           SDKMGR="$(command -v sdkmanager || find "$ANDROID_HOME" -name sdkmanager -type f 2>/dev/null | head -n1)"
           if [ -z "$SDKMGR" ]; then
-            echo "sdkmanager topilmadi, yuklab olinmoqda..."
             mkdir -p "$ANDROID_HOME/cmdline-tools"
             curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
             unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-extract
@@ -50,7 +49,6 @@ jobs:
           [ -x "$SDKMGR" ] || sudo chmod +x "$SDKMGR"
           echo "$(dirname "$SDKMGR")" >> "$GITHUB_PATH"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
-          echo "Using sdkmanager: $SDKMGR"
 
           NDK_VER=$(python3 -c 'import re,pathlib; s=pathlib.Path("TMessagesProj/build.gradle").read_text(); m=re.search(r"ndkVersion\s+[\"\x27]([^\"\x27]+)[\"\x27]", s); print(m.group(1) if m else "27.2.12479018")')
           COMPILE_SDK=$(python3 -c 'import re,pathlib; s=pathlib.Path("TMessagesProj/build.gradle").read_text(); m=re.search(r"compileSdk(?:Version)?\s+(\d+)", s); print(m.group(1) if m else "36")')
@@ -63,13 +61,45 @@ jobs:
             "ndk;${NDK_VER}" \
             "cmake;3.22.1"
 
+      - name: Auto-unpack Xabarchi_GitHub_Pack (ZIP or subfolder)
+        run: |
+          python3 - << 'PY'
+          import glob, os, shutil, zipfile
+
+          if not os.path.exists("scripts/apply_xabarchi_patches.py"):
+              zips = sorted(glob.glob("*Xabarchi*.zip") + glob.glob("*xabarchi*.zip"))
+              if zips:
+                  zpath = zips[0]
+                  print(f"ZIP topildi: {zpath}, arxivdan chiqarilmoqda...")
+                  with zipfile.ZipFile(zpath, "r") as zf:
+                      for info in zf.infolist():
+                          if info.filename.startswith(".github/"):
+                              continue
+                          zf.extract(info, ".")
+              else:
+                  for root, dirs, files in os.walk("."):
+                      if "apply_xabarchi_patches.py" in files and os.path.basename(root) == "scripts":
+                          parent = os.path.dirname(root)
+                          if parent not in (".", ""):
+                              print(f"Ichki papka topildi: {parent}, asosiy papkaga ko'chirilmoqda...")
+                              for item in ["scripts", "TMessagesProj", "settings.gradle", "README.txt"]:
+                                  src = os.path.join(parent, item)
+                                  if os.path.isdir(src):
+                                      shutil.copytree(src, item, dirs_exist_ok=True)
+                                  elif os.path.isfile(src):
+                                      shutil.copy2(src, item)
+                              break
+          PY
+          ls -la
+          ls -la scripts/ || true
+
       - name: Apply Xabarchi rebranding, Liquid Glass UI patches & API credentials
         env:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
           if [ ! -f "scripts/apply_xabarchi_patches.py" ]; then
-            echo "::error::scripts/apply_xabarchi_patches.py topilmadi! Xabarchi_GitHub_Pack.zip ichidagi scripts va TMessagesProj papkalarini repozitoriyga yuklang."
+            echo "::error::Xabarchi_GitHub_Pack.zip repozitoriyga yuklanmagan! Uni Code -> Add file -> Upload files orqali yuklang."
             exit 1
           fi
           python3 scripts/apply_xabarchi_patches.py
