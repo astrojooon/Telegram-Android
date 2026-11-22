@@ -29,23 +29,35 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Detect and install exact SDK, Build Tools, NDK & CMake
+      - name: Configure pre-installed Android SDK & install NDK/CMake
         run: |
-          NDK_VER=$(grep -Eo "ndkVersion[[:space:]]+[\"'][^\"']+[\"']" TMessagesProj/build.gradle | head -n1 | sed -E "s/.*[\"']([^\"']+)[\"'].*/\1/")
-          if [ -z "$NDK_VER" ]; then NDK_VER="27.2.12479018"; fi
-          COMPILE_SDK=$(grep -Eo 'compileSdk(Version)?[[:space:]]+[0-9]+' TMessagesProj/build.gradle | head -n1 | grep -Eo '[0-9]+')
-          if [ -z "$COMPILE_SDK" ]; then COMPILE_SDK="36"; fi
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+
+          SDKMGR="$(command -v sdkmanager || find "$ANDROID_HOME" -name sdkmanager -type f 2>/dev/null | head -n1)"
+          if [ -z "$SDKMGR" ]; then
+            echo "sdkmanager topilmadi, yuklab olinmoqda..."
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
+            unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-extract
+            rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+            mv /tmp/cmdline-extract/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
+            rm -rf /tmp/cmdline-tools.zip /tmp/cmdline-extract
+            SDKMGR="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          chmod +x "$SDKMGR"
+          echo "$(dirname "$SDKMGR")" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          echo "Using sdkmanager: $SDKMGR"
+
+          NDK_VER=$(python3 -c 'import re,pathlib; s=pathlib.Path("TMessagesProj/build.gradle").read_text(); m=re.search(r"ndkVersion\s+[\"\x27]([^\"\x27]+)[\"\x27]", s); print(m.group(1) if m else "27.2.12479018")')
+          COMPILE_SDK=$(python3 -c 'import re,pathlib; s=pathlib.Path("TMessagesProj/build.gradle").read_text(); m=re.search(r"compileSdk(?:Version)?\s+(\d+)", s); print(m.group(1) if m else "36")')
           echo "Detected compileSdk=$COMPILE_SDK, ndkVersion=$NDK_VER"
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager --install \
-            "platforms;android-${COMPILE_SDK}" \
-            "build-tools;35.0.0" \
-            "build-tools;${COMPILE_SDK}.0.0" \
-            "ndk;${NDK_VER}" \
-            "cmake;3.22.1" || sdkmanager --install \
+
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          "$SDKMGR" --install \
             "platforms;android-${COMPILE_SDK}" \
             "build-tools;35.0.0" \
             "ndk;${NDK_VER}" \
@@ -56,6 +68,10 @@ jobs:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
+          if [ ! -f "scripts/apply_xabarchi_patches.py" ]; then
+            echo "::error::scripts/apply_xabarchi_patches.py topilmadi! Xabarchi_GitHub_Pack.zip ichidagi scripts va TMessagesProj papkalarini repozitoriyga yuklang."
+            exit 1
+          fi
           python3 scripts/apply_xabarchi_patches.py
 
       - name: Create dummy google-services.json for com.xabarchi.app
